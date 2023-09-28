@@ -3,6 +3,7 @@
 #include "resource.h";
 
 LRESULT CALLBACK WindProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK AboutDlgProc(HWND, UINT, WPARAM, LPARAM);
 
 const TCHAR CLASS_NAME[] = _T("Text Editor");
 const TCHAR WINDOW_NAME[] = _T("Text Editor");
@@ -14,7 +15,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 	wc.lpfnWndProc = WindProc;
 	wc.hInstance = hInstance;
 	wc.lpszClassName = CLASS_NAME;
-	wc.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1);
+	wc.lpszMenuName = MAKEINTRESOURCE(IDR_MENU);
 
 	if (FAILED(RegisterClassEx(&wc)))
 	{
@@ -64,10 +65,14 @@ LRESULT CALLBACK WindProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		switch (LOWORD(wParam))
 		{
 		case ID_FILE_EXIT:
-			DestroyWindow(hWnd);
+			PostMessage(hWnd, WM_CLOSE, 0, 0);
+			break;
+		case ID_HELP_ABOUT:
+			DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ABOUTDIALOG), hWnd, AboutDlgProc);
 			break;
 		}
 		break;
+
 	case WM_PAINT:
 		{
 			PAINTSTRUCT ps = {};
@@ -91,4 +96,31 @@ LRESULT CALLBACK WindProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 
 	return 0;
+}
+
+BOOL CALLBACK AboutDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+	case WM_INITDIALOG:
+		return TRUE;
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDOK:
+			EndDialog(hWnd, IDOK);
+			break;
+
+		case IDCANCEL:
+			EndDialog(hWnd, IDCANCEL);
+			break;
+		}
+		break;
+
+	default:
+		return FALSE;
+	}
+
+	return TRUE;
 }
