@@ -108,12 +108,12 @@ BOOL CALLBACK AboutDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
-		case IDOK:
-			EndDialog(hWnd, IDOK);
+		case ID_DIALOG_OK:
+			EndDialog(hWnd, ID_DIALOG_OK);
 			break;
 
-		case IDCANCEL:
-			EndDialog(hWnd, IDCANCEL);
+		case ID_DIALOG_CANCEL:
+			EndDialog(hWnd, ID_DIALOG_CANCEL);
 			break;
 		}
 		break;

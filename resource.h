@@ -4,6 +4,8 @@
 //
 #define IDR_MENU                        101
 #define IDD_ABOUTDIALOG                 106
+#define ID_DIALOG_OK                    1013
+#define ID_DIALOG_CANCEL                1014
 #define ID_FILE_NEW                     40001
 #define ID_FILE_SAVEAS                  40002
 #define ID_FILE_EXIT                    40003
@@ -15,7 +17,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        113
 #define _APS_NEXT_COMMAND_VALUE         40005
-#define _APS_NEXT_CONTROL_VALUE         1013
+#define _APS_NEXT_CONTROL_VALUE         1015
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
