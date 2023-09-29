@@ -310,8 +310,7 @@ BOOL LoadText(HWND hEditBox, LPTSTR fileName)
 
 		if (fileSize != INVALID_FILE_SIZE)
 		{
-			LPTSTR fileText;
-			fileText = GlobalAlloc(GPTR, fileSize + 1);
+			LPTSTR fileText = (LPTSTR)GlobalAlloc(GPTR, fileSize + 1);
 
 			if (fileText != NULL)
 			{
