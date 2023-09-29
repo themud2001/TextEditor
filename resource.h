@@ -3,6 +3,7 @@
 // Used by TextEditor.rc
 //
 #define IDR_MENU                        101
+#define IDC_MAIN_EDITBOX				102
 #define IDC_MAIN_TOOLBAR                103
 #define IDC_MAIN_STATUSBAR				104
 #define IDD_ABOUTDIALOG                 106

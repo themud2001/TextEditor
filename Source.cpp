@@ -64,6 +64,30 @@ LRESULT CALLBACK WindProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_CREATE:
 		{
+			HFONT hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+
+			HWND hEditBox = CreateWindowEx(
+				WS_EX_CLIENTEDGE,
+				_T("EDIT"),
+				_T(""),
+				WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
+				0,
+				0,
+				100,
+				100,
+				hWnd,
+				(HMENU)IDC_MAIN_EDITBOX,
+				GetModuleHandle(NULL),
+				NULL
+			);
+
+			if (FAILED(hEditBox))
+			{
+				MessageBox(NULL, _T("Error in edit box creation!"), NULL, 0);
+			}
+
+			SendMessage(hEditBox, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(FALSE, 0));
+
 			TBBUTTON buttons[3];
 			TBADDBITMAP bitmap;
 
@@ -133,6 +157,37 @@ LRESULT CALLBACK WindProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		break;
+		
+	case WM_SIZE:
+		{
+			HWND hToolBar = GetDlgItem(hWnd, IDC_MAIN_TOOLBAR);
+			RECT toolBarRect;
+			int toolBarHeight;
+
+			HWND hStatusBar = GetDlgItem(hWnd, IDC_MAIN_STATUSBAR);
+			RECT statusBarRect;
+			int statusBarHeight;
+
+			HWND hEditBox = GetDlgItem(hWnd, IDC_MAIN_EDITBOX);
+			RECT clientRect;
+			int editBoxHeight;
+
+			SendMessage(hToolBar, TB_AUTOSIZE, 0, 0);
+			SendMessage(hStatusBar, WM_SIZE, 0, 0);
+
+			GetWindowRect(hToolBar, &toolBarRect);
+			toolBarHeight = toolBarRect.bottom - toolBarRect.top;
+
+			GetWindowRect(hStatusBar, &statusBarRect);
+			statusBarHeight = statusBarRect.bottom - statusBarRect.top;
+
+			GetClientRect(hWnd, &clientRect);
+			editBoxHeight = clientRect.bottom - toolBarHeight - statusBarHeight;
+
+			SetWindowPos(hEditBox, NULL, 0, toolBarHeight, clientRect.right, editBoxHeight, SWP_NOZORDER);
+		}
+		break;
+
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
