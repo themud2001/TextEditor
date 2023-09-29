@@ -5,6 +5,8 @@
 
 LRESULT CALLBACK WindProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK AboutDlgProc(HWND, UINT, WPARAM, LPARAM);
+void OpenFile(HWND);
+BOOL LoadText(HWND, LPTSTR);
 
 const TCHAR CLASS_NAME[] = _T("Text Editor");
 const TCHAR WINDOW_NAME[] = _T("Text Editor");
@@ -136,6 +138,8 @@ LRESULT CALLBACK WindProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			SendMessage(hToolBar, TB_ADDBUTTONS, sizeof(buttons) / sizeof(TBBUTTON), (LPARAM)&buttons);
 
+			int statusBarWidths[] = { 150, -1 };
+
 			HWND hStatusBar = CreateWindowEx(
 				0,
 				STATUSCLASSNAME,
@@ -155,6 +159,8 @@ LRESULT CALLBACK WindProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				MessageBox(NULL, _T("Error in status bar creation!"), NULL, 0);
 			}
+
+			SendMessage(hStatusBar, SB_SETPARTS, sizeof(statusBarWidths) / sizeof(int), (LPARAM)statusBarWidths);
 		}
 		break;
 		
@@ -191,6 +197,19 @@ LRESULT CALLBACK WindProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
+		case ID_FILE_NEW:
+			SetDlgItemText(hWnd, IDC_MAIN_EDITBOX, _T(""));
+			SendDlgItemMessage(hWnd, IDC_MAIN_STATUSBAR, SB_SETTEXT, 0, (LPARAM)_T("New file"));
+			break;
+
+		case ID_FILE_OPEN:
+			OpenFile(hWnd);
+			break;
+
+		case ID_FILE_SAVEAS:
+
+			break;
+
 		case ID_FILE_EXIT:
 			PostMessage(hWnd, WM_CLOSE, 0, 0);
 			break;
@@ -251,4 +270,69 @@ BOOL CALLBACK AboutDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 
 	return TRUE;
+}
+
+void OpenFile(HWND hWnd)
+{
+	OPENFILENAME ofn = {};
+	TCHAR fileName[MAX_PATH] = _T("");
+
+	ZeroMemory(&ofn, sizeof(ofn));
+
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hWnd;
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+	ofn.lpstrFile = fileName;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.lpstrFilter = _T("Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0");
+	ofn.lpstrDefExt = _T("txt");
+
+	if (SUCCEEDED(GetOpenFileName(&ofn)))
+	{
+		HWND hEditBox = GetDlgItem(hWnd, IDC_MAIN_EDITBOX);
+
+		if (LoadText(hEditBox, fileName))
+		{
+			SendDlgItemMessage(hWnd, IDC_MAIN_STATUSBAR, SB_SETTEXT, 0, (LPARAM)_T("Opened"));
+			SendDlgItemMessage(hWnd, IDC_MAIN_STATUSBAR, SB_SETTEXT, 1, (LPARAM)fileName);
+		}
+	}
+}
+
+BOOL LoadText(HWND hEditBox, LPTSTR fileName)
+{
+	HANDLE hFile = CreateFile(fileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	BOOL success = FALSE;
+
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		DWORD fileSize = GetFileSize(hFile, NULL);
+
+		if (fileSize != INVALID_FILE_SIZE)
+		{
+			LPTSTR fileText;
+			fileText = GlobalAlloc(GPTR, fileSize + 1);
+
+			if (fileText != NULL)
+			{
+				DWORD read;
+
+				if (ReadFile(hFile, fileText, fileSize, &read, NULL))
+				{
+					fileText[fileSize] = 0;
+
+					if (SUCCEEDED(SetWindowText(hEditBox, fileText)))
+					{
+						success = TRUE;
+					}
+				}
+			}
+
+			GlobalFree(fileText);
+		}
+
+		CloseHandle(hFile);
+	}
+
+	return success;
 }
