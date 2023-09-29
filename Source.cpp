@@ -7,6 +7,8 @@ LRESULT CALLBACK WindProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK AboutDlgProc(HWND, UINT, WPARAM, LPARAM);
 void OpenFile(HWND);
 BOOL LoadText(HWND, LPTSTR);
+void SaveFile(HWND);
+BOOL SaveText(HWND, LPTSTR);
 
 const TCHAR CLASS_NAME[] = _T("Text Editor");
 const TCHAR WINDOW_NAME[] = _T("Text Editor");
@@ -207,7 +209,7 @@ LRESULT CALLBACK WindProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case ID_FILE_SAVEAS:
-
+			SaveFile(hWnd);
 			break;
 
 		case ID_FILE_EXIT:
@@ -293,7 +295,7 @@ void OpenFile(HWND hWnd)
 
 		if (LoadText(hEditBox, fileName))
 		{
-			SendDlgItemMessage(hWnd, IDC_MAIN_STATUSBAR, SB_SETTEXT, 0, (LPARAM)_T("Opened"));
+			SendDlgItemMessage(hWnd, IDC_MAIN_STATUSBAR, SB_SETTEXT, 0, (LPARAM)_T("Opened from..."));
 			SendDlgItemMessage(hWnd, IDC_MAIN_STATUSBAR, SB_SETTEXT, 1, (LPARAM)fileName);
 		}
 	}
@@ -325,9 +327,71 @@ BOOL LoadText(HWND hEditBox, LPTSTR fileName)
 						success = TRUE;
 					}
 				}
-			}
 
-			GlobalFree(fileText);
+				GlobalFree(fileText);
+			}
+		}
+
+		CloseHandle(hFile);
+	}
+
+	return success;
+}
+
+void SaveFile(HWND hWnd)
+{
+	OPENFILENAME ofn = {};
+	TCHAR fileName[MAX_PATH] = _T("");
+
+	ZeroMemory(&ofn, sizeof(ofn));
+
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hWnd;
+	ofn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	ofn.lpstrFile = fileName;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.lpstrFilter = _T("Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0");
+	ofn.lpstrDefExt = _T("txt");
+
+	if (SUCCEEDED(GetSaveFileName(&ofn)))
+	{
+		HWND hEditBox = GetDlgItem(hWnd, IDC_MAIN_EDITBOX);
+
+		if (SaveText(hEditBox, fileName))
+		{
+			SendDlgItemMessage(hWnd, IDC_MAIN_STATUSBAR, SB_SETTEXT, 0, (LPARAM)_T("Saved to..."));
+			SendDlgItemMessage(hWnd, IDC_MAIN_STATUSBAR, SB_SETTEXT, 1, (LPARAM)fileName);
+		}
+	}
+}
+
+BOOL SaveText(HWND hEditBox, LPTSTR fileName)
+{
+	HANDLE hFile = CreateFile(fileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	BOOL success = FALSE;
+
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		DWORD textLength = GetWindowTextLength(hEditBox);
+
+		if (textLength > 0)
+		{
+			LPTSTR fileText = (LPTSTR)GlobalAlloc(GPTR, textLength + 1);
+
+			if (fileText != NULL)
+			{
+				if (GetWindowText(hEditBox, fileText, textLength + 1))
+				{
+					DWORD written;
+
+					if (WriteFile(hFile, fileText, textLength, &written, NULL))
+					{
+						success = TRUE;
+					}
+				}
+
+				GlobalFree(fileText);
+			}
 		}
 
 		CloseHandle(hFile);
