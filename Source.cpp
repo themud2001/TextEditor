@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <CommCtrl.h>
 #include <tchar.h>
 #include "resource.h";
 
@@ -61,12 +62,84 @@ LRESULT CALLBACK WindProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
+	case WM_CREATE:
+		{
+			TBBUTTON buttons[3];
+			TBADDBITMAP bitmap;
+
+			HWND hToolBar = CreateWindowEx(
+				0,
+				TOOLBARCLASSNAME,
+				NULL,
+				WS_CHILD | WS_VISIBLE,
+				0,
+				0,
+				0,
+				0,
+				hWnd,
+				(HMENU)IDC_MAIN_TOOLBAR,
+				GetModuleHandle(NULL),
+				NULL
+			);
+
+			if (FAILED(hToolBar))
+			{
+				MessageBox(NULL, _T("Error in toolbar creation!"), NULL, 0);
+			}
+
+			SendMessage(hToolBar, TB_BUTTONSTRUCTSIZE, (WPARAM)sizeof(TBBUTTON), 0);
+
+			bitmap.hInst = HINST_COMMCTRL;
+			bitmap.nID = IDB_STD_SMALL_COLOR;
+
+			SendMessage(hToolBar, TB_ADDBITMAP, 0, (WPARAM)&bitmap);
+			ZeroMemory(buttons, sizeof(buttons));
+
+			buttons[0].iBitmap = STD_FILENEW;
+			buttons[0].fsState = TBSTATE_ENABLED;
+			buttons[0].fsStyle = TBSTYLE_BUTTON;
+			buttons[0].idCommand = ID_FILE_NEW;
+
+			buttons[1].iBitmap = STD_FILEOPEN;
+			buttons[1].fsState = TBSTATE_ENABLED;
+			buttons[1].fsStyle = TBSTYLE_BUTTON;
+			buttons[1].idCommand = ID_FILE_OPEN;
+
+			buttons[2].iBitmap = STD_FILESAVE;
+			buttons[2].fsState = TBSTATE_ENABLED;
+			buttons[2].fsStyle = TBSTYLE_BUTTON;
+			buttons[2].idCommand = ID_FILE_SAVEAS;
+
+			SendMessage(hToolBar, TB_ADDBUTTONS, sizeof(buttons) / sizeof(TBBUTTON), (LPARAM)&buttons);
+
+			HWND hStatusBar = CreateWindowEx(
+				0,
+				STATUSCLASSNAME,
+				NULL,
+				WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
+				0,
+				0,
+				0,
+				0,
+				hWnd,
+				(HMENU)IDC_MAIN_STATUSBAR,
+				GetModuleHandle(NULL),
+				NULL
+			);
+
+			if (FAILED(hStatusBar))
+			{
+				MessageBox(NULL, _T("Error in status bar creation!"), NULL, 0);
+			}
+		}
+		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
 		case ID_FILE_EXIT:
 			PostMessage(hWnd, WM_CLOSE, 0, 0);
 			break;
+
 		case ID_HELP_ABOUT:
 			DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ABOUTDIALOG), hWnd, AboutDlgProc);
 			break;
