@@ -202,6 +202,7 @@ LRESULT CALLBACK WindProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case ID_FILE_NEW:
 			SetDlgItemText(hWnd, IDC_MAIN_EDITBOX, _T(""));
 			SendDlgItemMessage(hWnd, IDC_MAIN_STATUSBAR, SB_SETTEXT, 0, (LPARAM)_T("New file"));
+			SendDlgItemMessage(hWnd, IDC_MAIN_STATUSBAR, SB_SETTEXT, 1, (LPARAM)_T(""));
 			break;
 
 		case ID_FILE_OPEN:
@@ -289,7 +290,7 @@ void OpenFile(HWND hWnd)
 	ofn.lpstrFilter = _T("Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0");
 	ofn.lpstrDefExt = _T("txt");
 
-	if (SUCCEEDED(GetOpenFileName(&ofn)))
+	if (GetOpenFileName(&ofn))
 	{
 		HWND hEditBox = GetDlgItem(hWnd, IDC_MAIN_EDITBOX);
 
@@ -312,17 +313,17 @@ BOOL LoadText(HWND hEditBox, LPTSTR fileName)
 
 		if (fileSize != INVALID_FILE_SIZE)
 		{
-			LPTSTR fileText = (LPTSTR)GlobalAlloc(GPTR, fileSize + 1);
+			LPTSTR fileText = (LPTSTR)GlobalAlloc(GPTR, (fileSize + 1) * sizeof(TCHAR));
 
 			if (fileText != NULL)
 			{
 				DWORD read;
 
-				if (ReadFile(hFile, fileText, fileSize, &read, NULL))
+				if (ReadFile(hFile, fileText, fileSize * sizeof(TCHAR), &read, NULL))
 				{
 					fileText[fileSize] = 0;
 
-					if (SUCCEEDED(SetWindowText(hEditBox, fileText)))
+					if (SetWindowText(hEditBox, fileText))
 					{
 						success = TRUE;
 					}
@@ -353,7 +354,7 @@ void SaveFile(HWND hWnd)
 	ofn.lpstrFilter = _T("Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0");
 	ofn.lpstrDefExt = _T("txt");
 
-	if (SUCCEEDED(GetSaveFileName(&ofn)))
+	if (GetSaveFileName(&ofn))
 	{
 		HWND hEditBox = GetDlgItem(hWnd, IDC_MAIN_EDITBOX);
 
@@ -376,7 +377,7 @@ BOOL SaveText(HWND hEditBox, LPTSTR fileName)
 
 		if (textLength > 0)
 		{
-			LPTSTR fileText = (LPTSTR)GlobalAlloc(GPTR, textLength + 1);
+			LPTSTR fileText = (LPTSTR)GlobalAlloc(GPTR, (textLength + 1) * sizeof(TCHAR));
 
 			if (fileText != NULL)
 			{
@@ -384,7 +385,7 @@ BOOL SaveText(HWND hEditBox, LPTSTR fileName)
 				{
 					DWORD written;
 
-					if (WriteFile(hFile, fileText, textLength, &written, NULL))
+					if (WriteFile(hFile, fileText, textLength * sizeof(TCHAR), &written, NULL))
 					{
 						success = TRUE;
 					}
