@@ -112,6 +112,19 @@ BEGIN
     0
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_ACCEL ACCELERATORS
+BEGIN
+    "S",            ID_KEY_SAVE,            VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_KEY_OPEN,            VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_KEY_NEW,             VIRTKEY, CONTROL, NOINVERT
+END
+
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 

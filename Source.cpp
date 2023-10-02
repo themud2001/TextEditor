@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <CommCtrl.h>
 #include <tchar.h>
+#include <wchar.h>
 #include "resource.h";
 
 LRESULT CALLBACK WindProc(HWND, UINT, WPARAM, LPARAM);
@@ -51,12 +52,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 
 	ShowWindow(hWnd, nCmdShow);
 
+	HACCEL hAccel = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCEL));
+
 	MSG msg = {};
 
 	while (GetMessage(&msg, hWnd, 0, 0) > 0)
 	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		if (!TranslateAccelerator(hWnd, hAccel, &msg))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 	}
 
 	return 0;
@@ -199,16 +205,19 @@ LRESULT CALLBACK WindProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
+		case ID_KEY_NEW:
 		case ID_FILE_NEW:
 			SetDlgItemText(hWnd, IDC_MAIN_EDITBOX, _T(""));
 			SendDlgItemMessage(hWnd, IDC_MAIN_STATUSBAR, SB_SETTEXT, 0, (LPARAM)_T("New file"));
 			SendDlgItemMessage(hWnd, IDC_MAIN_STATUSBAR, SB_SETTEXT, 1, (LPARAM)_T(""));
 			break;
 
+		case ID_KEY_OPEN:
 		case ID_FILE_OPEN:
 			OpenFile(hWnd);
 			break;
-
+		
+		case ID_KEY_SAVE:
 		case ID_FILE_SAVEAS:
 			SaveFile(hWnd);
 			break;
